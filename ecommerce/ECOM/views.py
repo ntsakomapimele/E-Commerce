@@ -4,9 +4,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from .forms import SignUpForm
 from django import forms
-# Create your views here.
 
+# Create your views here.
+def product_view(request, pk):
+       product = Product.objects.get(id = pk)
 def homepage(request):
     products = Product.objects.all()
 
@@ -43,4 +46,23 @@ def logout_person(request):
 
 
 def registration(request):
-        return render(request, 'registration.html',{})
+        form = SignUpForm()
+        if request.method == 'POST':
+               form = SignUpForm(request.POST)
+               if form.is_valid():
+                      form.save()
+                      username = form.cleaned_data['username']
+                      password = form.cleaned_data['password1']
+
+                      user = authenticate(username = username, password =password)
+                      login(request, user)
+                      messages.success(request, ("Account registered successfully"))
+                      return redirect('home')
+               else:
+                      messages.success(request, ("Could not register account"))
+                      return redirect('registration')
+               
+
+        else:
+               
+         return render(request, 'registration.html',{'form': form})
